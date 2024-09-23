@@ -30,9 +30,14 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
-@app.get("/")
+@app.get(
+  "/",
+  summary="Root",
+  description="Root endpoint",
+  response_description="Beneath this mask, there is more than flesh...",
+)
 def get_root():
-  return {"V"} # V for Vendetta
+  return "V" # V for Vendetta
 
 
 if __name__ == "__main__":
