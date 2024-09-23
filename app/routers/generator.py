@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 from typing import List
 from random import choice
 
@@ -9,6 +10,10 @@ router = APIRouter()
 
 puzzle_sizes: list = [(5, 5), (10, 10), (15, 15), (20, 20), (25, 25)]
 
+class PuzzleConfig(BaseModel):
+  width: int
+  height: int
+
 @router.post(
   "/new",
   response_model=str,
@@ -16,7 +21,9 @@ puzzle_sizes: list = [(5, 5), (10, 10), (15, 15), (20, 20), (25, 25)]
   description="Generates a new puzzle with the given width and height, and returns it as a string.",
   response_description="The generated puzzle."
 )
-async def calculate(width: int, height: int):
+async def calculate(config: PuzzleConfig):
+  width = config.width
+  height = config.height
   if not width or not height:
     raise HTTPException(status_code=400, detail="Width and height are required")
   new_puzzle = generate_till_full(width, height)
