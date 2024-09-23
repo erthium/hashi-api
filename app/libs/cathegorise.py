@@ -44,7 +44,7 @@ def inspect_puzzle(grid: list[list[Node]]) -> PuzzleInformation:
     return PuzzleInformation(island_amount, total_island_count, total_seven_count, total_eight_count, min_count, max_count)
 
 
-def determine_difficulty(grid: list[list[Node]]) -> float:
+def get_difficulty_value(grid: list[list[Node]]) -> float:
     """
     Gets a grid and returns a difficulty rating.\n
     Rating is an float between 0 and 1.
@@ -55,3 +55,19 @@ def determine_difficulty(grid: list[list[Node]]) -> float:
     above_six_weight = (info.total_seven_count + info.total_eight_count) / info.island_amount
     difficulty = island_weigth * ISLAND_WEIGHT_FACTOR + island_amount_weight * ISLAND_AMOUNT_FACTOR + above_six_weight * ABOVE_SIX_FACTOR
     return difficulty
+
+
+def get_difficulty(grid: list[list[Node]]) -> int:
+    """
+    Gets a grid and returns a difficulty rating.\n
+    Return value is an integer between 1 and 3.\n
+    1: Easy\n
+    2: Medium\n
+    3: Hard
+    """
+    difficulty = get_difficulty_value(grid)
+    if difficulty < EASY_THRESHOLD:
+        return 1
+    if difficulty < MEDIUM_THRESHOLD:
+        return 2
+    return 3

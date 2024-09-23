@@ -6,5 +6,5 @@ ISLAND_AMOUNT_FACTOR: float = 0.18
 ABOVE_SIX_FACTOR: float = 0.23
 
 EASY_THRESHOLD: float = 0.2
-MEDIUM_THRESHOLD: float = 0.4
+MEDIUM_THRESHOLD: float = 0.5
 HARD_THRESHOLD: float = 1.0 # unnecessary, but for clarity
