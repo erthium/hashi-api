@@ -3,11 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import generator
 #from app.routers import storage
-#from app.core.config import settings
+from app.core.settings import settings
 
-import os
 from dotenv import load_dotenv
-load_dotenv()
 
 app = FastAPI()
 
@@ -42,4 +40,4 @@ def get_root():
 
 if __name__ == "__main__":
   import uvicorn
-  uvicorn.run(app, host="0.0.0.0", port=os.environ.get("PORT", 8000))
+  uvicorn.run(app, host="0.0.0.0", port=settings.PORT)
