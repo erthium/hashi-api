@@ -1,1 +1,1 @@
-from puzzle_requests import PuzzleGeometry, PuzzlePopulateRequest
+from .puzzle_requests import PuzzleGeometry, PuzzlePopulateRequest
