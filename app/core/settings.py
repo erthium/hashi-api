@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings
-# env_file = ".env"
 from dotenv import load_dotenv
 import os
 

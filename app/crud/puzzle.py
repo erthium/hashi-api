@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.puzzle import Puzzle  # Adjust based on your model location
+from app.models.puzzle import Puzzle
 from sqlalchemy.sql import func
 
 def register_puzzle_by_data(db: Session, width: int, height: int, difficulty: str, puzzle_data: str) -> Puzzle:

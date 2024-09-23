@@ -2,11 +2,10 @@
 Production service for generating and registering puzzles
 """
 
-from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from fastapi import Depends
 
-from app.models.puzzle import Puzzle
+from app.models import Puzzle
 from app.crud.puzzle import get_puzzle_by_id, get_random_puzzle
 from app.core.database import get_database
 

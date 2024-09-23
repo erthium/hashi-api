@@ -5,7 +5,7 @@ Hashi service that directly interacts with the Hashi API router and the database
 from sqlalchemy.orm import Session
 from fastapi import Depends
 
-from app.crud.puzzle import register_puzzle_by_data, register_puzzle
+from app.crud.puzzle import register_puzzle_by_data
 from app.core.database import get_database
 
 from app.libs.generator import generate_till_full

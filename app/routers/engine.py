@@ -1,10 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from typing import List
 from random import choice
 
-from app.services.production_service import ProductionService
-from app.schemes.puzzle_requests import PuzzleGeometry, PuzzlePopulateRequest
+from app.services import ProductionService
+from app.schemes import PuzzleGeometry, PuzzlePopulateRequest
 
 router = APIRouter()
 
