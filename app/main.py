@@ -1,16 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import generator
-#from app.routers import storage
+from app.routers import engine
+from app.routers import storage
 from app.core.settings import settings
-
-from dotenv import load_dotenv
 
 app = FastAPI()
 
-app.include_router(generator.router, prefix="/hashi/generator")
-#app.include_router(storage.router, prefix="/hashi/storage")
+app.include_router(engine.router, prefix="/hashi/engine")
+app.include_router(storage.router, prefix="/hashi/storage")
 
 origins = [
   "http://localhost",
