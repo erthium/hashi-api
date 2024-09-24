@@ -43,7 +43,13 @@ def get_random_puzzle(db: Session) -> Puzzle | None:
   return db.query(Puzzle).order_by(func.random()).first()
 
 
-def get_puzzle_count(db: Session, width: int, height: int, difficulty: int = 0):
+def get_puzzle_by_size(db: Session, width: int, height: int) -> Puzzle | None:
+  """
+  Get a random puzzle by its size, return the puzzle
+  """
+  return db.query(Puzzle).filter(Puzzle.size_x == width, Puzzle.size_y == height).order_by(func.random()).first()
+
+
 def get_puzzle_count(db: Session, width: int, height: int, difficulty: int = 0) -> int:
   """
   Get the number of puzzles in the database with the given width, height and difficulty\n

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 
 from app.models import Puzzle
-from app.crud.puzzle import get_puzzle_by_id, get_random_puzzle
+from app.crud.puzzle import get_puzzle_by_id, get_random_puzzle, get_puzzle_by_size
 from app.core.database import get_database
 
 class HashiService:
@@ -18,6 +18,13 @@ class HashiService:
     Get a random puzzle from the database
     """
     return get_random_puzzle(self.db)
+
+
+  def get_puzzle_by_size(self, width: int, height: int) -> Puzzle:
+    """
+    Get a random puzzle by its size
+    """
+    return get_puzzle_by_size(self.db, width, height)
 
 
   def get_puzzle_by_id(self, puzzle_id: int) -> Puzzle:
