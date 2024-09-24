@@ -9,7 +9,7 @@ class Puzzle(Base):
   puzzle_type = Column(String, nullable=False)
   size_x = Column(Integer, nullable=False)
   size_y = Column(Integer, nullable=False)
-  difficulty = Column(String, nullable=False)
+  difficulty = Column(Integer, nullable=False)
   puzzle_data = Column(Text, nullable=False)
   created_at = Column(TIMESTAMP, default=datetime.now())
 
