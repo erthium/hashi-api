@@ -3,6 +3,7 @@ from random import choice
 
 from app.services import ProductionService
 from app.schemes import PuzzleGeometry, PuzzlePopulateRequest
+from app.core.settings import settings
 
 router = APIRouter()
 
@@ -17,11 +18,16 @@ puzzle_sizes: list = [(5, 5), (10, 10), (15, 15), (20, 20), (25, 25)]
   response_description="The generated puzzle."
 )
 async def generate(geometry: PuzzleGeometry, productionService: ProductionService = Depends(ProductionService)):
+  if settings.DEVELOPMENT != 1:
+    raise HTTPException(status_code=403, detail="This endpoint is only available in development mode")
+  if settings.LOCK_DB_WRITE == 1:
+    raise HTTPException(status_code=403, detail="Database write is locked")
   width = geometry.width
   height = geometry.height
   if not width or not height:
     raise HTTPException(status_code=400, detail="Width and height are required")
-  productionService.create_puzzle(width, height)
+  generated_puzzle = productionService.create_puzzle(width, height)
+  return generated_puzzle
 
 
 @router.get(
@@ -32,9 +38,13 @@ async def generate(geometry: PuzzleGeometry, productionService: ProductionServic
   response_description="The generated puzzle."
 )
 async def generate_random(productionService: ProductionService = Depends(ProductionService)):
+  if settings.DEVELOPMENT != 1:
+    raise HTTPException(status_code=403, detail="This endpoint is only available in development mode")
+  if settings.LOCK_DB_WRITE == 1:
+    raise HTTPException(status_code=403, detail="Database write is locked")
   width, height = choice(puzzle_sizes)
-  new_puzzle = productionService.create_puzzle(width, height)
-  return new_puzzle
+  generated_puzzle = productionService.create_puzzle(width, height)
+  return generated_puzzle
 
 
 @router.post(
@@ -45,12 +55,41 @@ async def generate_random(productionService: ProductionService = Depends(Product
   response_description="None"
 )
 async def populate(data: PuzzlePopulateRequest, productionService: ProductionService = Depends(ProductionService)):
+  if settings.DEVELOPMENT != 1:
+    raise HTTPException(status_code=403, detail="This endpoint is only available in development mode")
+  if settings.LOCK_DB_WRITE == 1:
+    raise HTTPException(status_code=403, detail="Database write is locked")
   width = data.width
   height = data.height
   amount = data.amount
+  target_difficulty = data.target_difficulty if data.target_difficulty else 0
   if not width or not height:
     raise HTTPException(status_code=400, detail="Width and height are required")
   if not amount:
     raise HTTPException(status_code=400, detail="Amount is required")
-  productionService.populate_database(width, height, amount)
+  productionService.populate_database(width, height, amount, target_difficulty)
+  return None
+
+
+@router.post(
+  "/populate_till",
+  response_model=None,
+  summary="Populate the database till",
+  description="Populates the database with a given amount of puzzles with a given width and height, until the target difficulty is reached.",
+  response_description="None"
+)
+async def populate_till(data: PuzzlePopulateRequest, productionService: ProductionService = Depends(ProductionService)):
+  if settings.DEVELOPMENT != 1:
+    raise HTTPException(status_code=403, detail="This endpoint is only available in development mode")
+  if settings.LOCK_DB_WRITE == 1:
+    raise HTTPException(status_code=403, detail="Database write is locked")
+  width = data.width
+  height = data.height
+  amount = data.amount
+  target_difficulty = data.target_difficulty if data.target_difficulty else 0
+  if not width or not height:
+    raise HTTPException(status_code=400, detail="Width and height are required")
+  if not amount:
+    raise HTTPException(status_code=400, detail="Amount is required")
+  productionService.populate_database_till(width, height, amount, target_difficulty)
   return None
