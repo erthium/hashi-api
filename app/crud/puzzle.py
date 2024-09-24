@@ -29,14 +29,14 @@ def register_puzzle(db: Session, puzzle: Puzzle) -> Puzzle:
   return puzzle
 
 
-def get_puzzle_by_id(db: Session, puzzle_id: int):
+def get_puzzle_by_id(db: Session, puzzle_id: int) -> Puzzle | None:
   """
   Get a puzzle by its ID, return the puzzle
   """
   return db.query(Puzzle).filter(Puzzle.id == puzzle_id).first()
 
 
-def get_random_puzzle(db: Session):
+def get_random_puzzle(db: Session) -> Puzzle | None:
   """
   Get a random puzzle from the database
   """
@@ -44,6 +44,7 @@ def get_random_puzzle(db: Session):
 
 
 def get_puzzle_count(db: Session, width: int, height: int, difficulty: int = 0):
+def get_puzzle_count(db: Session, width: int, height: int, difficulty: int = 0) -> int:
   """
   Get the number of puzzles in the database with the given width, height and difficulty\n
   If difficulty is set to 0 as default, it will return the count of all puzzles with the given width and height

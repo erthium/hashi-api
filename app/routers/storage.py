@@ -16,6 +16,8 @@ router = APIRouter()
 async def get_random(hashiService: HashiService = Depends(HashiService)):
   try:
     puzzle = hashiService.get_random_puzzle()
+    if puzzle is None:
+      raise HTTPException(status_code=404, detail="No puzzle found in the database")
     return puzzle.puzzle_data
   except Exception as e:
     raise HTTPException(status_code=500)
@@ -31,6 +33,8 @@ async def get_random(hashiService: HashiService = Depends(HashiService)):
 async def get_puzzle(puzzle_id: int, hashiService: HashiService = Depends(HashiService)):
   try:
     puzzle = hashiService.get_puzzle_by_id(puzzle_id)
+    if puzzle is None:
+      raise HTTPException(status_code=404, detail="No puzzle found with the given ID")
     return puzzle.puzzle_data
   except Exception as e:
     raise HTTPException(status_code=500)
