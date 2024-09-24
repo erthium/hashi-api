@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.puzzle import Puzzle
 from sqlalchemy.sql import func
 
-def register_puzzle_by_data(db: Session, width: int, height: int, difficulty: str, puzzle_data: str) -> Puzzle:
+def register_puzzle_by_data(db: Session, width: int, height: int, difficulty: int, puzzle_data: str) -> Puzzle:
   """
   Register a new puzzle to the database, commit, and return the puzzle
   """
@@ -40,3 +40,13 @@ def get_random_puzzle(db: Session):
   Get a random puzzle from the database
   """
   return db.query(Puzzle).order_by(func.random()).first()
+
+
+def get_puzzle_count(db: Session, width: int, height: int, difficulty: int = 0):
+  """
+  Get the number of puzzles in the database with the given width, height and difficulty\n
+  If difficulty is set to 0 as default, it will return the count of all puzzles with the given width and height
+  """
+  if difficulty == 0:
+    return db.query(Puzzle).filter(Puzzle.size_x == width, Puzzle.size_y == height).count()
+  return db.query(Puzzle).filter(Puzzle.size_x == width, Puzzle.size_y == height, Puzzle.difficulty == difficulty).count()
