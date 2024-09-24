@@ -1,4 +1,4 @@
-from app.libs.node import Node
+from .node import Node
 
 def grid_to_string(grid: list[list[Node]]) -> str:
   """

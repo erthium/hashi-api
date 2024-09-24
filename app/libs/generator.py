@@ -1,4 +1,4 @@
-from app.libs.node import Node, direction_to_vector, is_in_grid
+from .node import Node, direction_to_vector, is_in_grid
 from random import randint, choice
 
 def get_random_direction(grid: list[list[Node]], x: int, y: int) -> int:

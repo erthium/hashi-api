@@ -1,16 +1,34 @@
 from dataclasses import dataclass
-from node import Node
+import os
 
-from difficulty_map import ISLAND_WEIGHT_FACTOR, ISLAND_AMOUNT_FACTOR, ABOVE_SIX_FACTOR, EASY_THRESHOLD, MEDIUM_THRESHOLD
+from .node import Node
+
+SCRIPT_DIR: str = os.path.dirname(__file__)
+MAP_PATH: str = os.path.join(SCRIPT_DIR, "difficulty_map.json")
+
+
+ISLAND_WEIGHT_FACTOR: float = 0.61
+ISLAND_AMOUNT_FACTOR: float = 0.33
+BELOW_SEVEN_FACTOR: float = 0.06
+
+
+def get_diffiulty_map() -> list[list[int, int, int, int]]:
+    """
+    Loads the entire table from a json file.
+    """
+    import json
+    with open(MAP_PATH, "r") as file:
+        return json.load(file)
+
 
 @dataclass
 class PuzzleInformation:
+    grid_width: int
+    grid_height: int
     island_amount: int
     total_island_count: int
     total_seven_count: int
     total_eight_count: int
-    min_island_count: int
-    max_island_count: int
 
 
 def get_island_amount_boundries(width: int, height: int) -> list[int, int]:
@@ -40,8 +58,7 @@ def inspect_puzzle(grid: list[list[Node]]) -> PuzzleInformation:
                     total_seven_count += 1
                 if grid[x][y].i_count == 8:
                     total_eight_count += 1
-    min_count, max_count = get_island_amount_boundries(grid_width, grid_height)
-    return PuzzleInformation(island_amount, total_island_count, total_seven_count, total_eight_count, min_count, max_count)
+    return PuzzleInformation(grid_width, grid_height, island_amount, total_island_count, total_seven_count, total_eight_count)
 
 
 def get_difficulty_value(grid: list[list[Node]]) -> float:
@@ -50,10 +67,17 @@ def get_difficulty_value(grid: list[list[Node]]) -> float:
     Rating is an float between 0 and 1.
     """
     info: PuzzleInformation = inspect_puzzle(grid)
-    island_weigth = info.total_island_count / info.island_amount / 8
-    island_amount_weight = (info.island_amount - info.min_island_count) / (info.max_island_count - info.min_island_count)
-    above_six_weight = (info.total_seven_count + info.total_eight_count) / info.island_amount
-    difficulty = island_weigth * ISLAND_WEIGHT_FACTOR + island_amount_weight * ISLAND_AMOUNT_FACTOR + above_six_weight * ABOVE_SIX_FACTOR
+
+    island_weigth = info.total_island_count / info.island_amount
+    island_weigth_calculated = island_weigth * ISLAND_WEIGHT_FACTOR
+
+    island_amount_weight = info.island_amount / (info.grid_width + info.grid_height) / 2
+    island_amount_weight_calculated = island_amount_weight * ISLAND_AMOUNT_FACTOR
+
+    below_seven_weight = info.island_amount - (info.total_seven_count + info.total_eight_count)
+    below_seven_weight_calculated = below_seven_weight * BELOW_SEVEN_FACTOR
+
+    difficulty = island_weigth_calculated + island_amount_weight_calculated + below_seven_weight_calculated
     return difficulty
 
 
@@ -66,8 +90,17 @@ def get_difficulty(grid: list[list[Node]]) -> int:
     3: Hard
     """
     difficulty = get_difficulty_value(grid)
-    if difficulty < EASY_THRESHOLD:
-        return 1
-    if difficulty < MEDIUM_THRESHOLD:
-        return 2
-    return 3
+    difficulty_map = get_diffiulty_map()
+    for entry in difficulty_map:
+        if entry[0] == len(grid) and entry[1] == len(grid[0]):
+            min_difficulty = entry[2]
+            max_difficulty = entry[3]
+            easy_boundry = (max_difficulty - min_difficulty) / 3 + min_difficulty
+            intermediate_boundry = (max_difficulty - min_difficulty) / 3 * 2 + min_difficulty
+            if difficulty < easy_boundry:
+                return 1
+            elif difficulty < intermediate_boundry:
+                return 2
+            else:
+                return 3
+    raise ValueError("Geometry not found in difficulty map.")
