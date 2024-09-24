@@ -12,7 +12,7 @@ class Settings(BaseSettings):
   DATABASE_URL: str = os.environ.get("DATABASE_URL")
   DEVELOPMENT: bool = os.environ.get("DEVELOPMENT", 0) == 1
   LOCK_DB_WRITE: bool = os.environ.get("LOCK_DB_WRITE", 0) == 1
-  PORT: int = os.environ.get("PORT", 8000)
+  PORT: int = os.environ.get("PORT", 4040)
 
   ALLOWED_GEOMETRIES: list[tuple[int, int]] = [(10, 10), (15, 15), (25, 25)]
 

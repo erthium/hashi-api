@@ -10,7 +10,7 @@ freeze:
 	pip freeze > $(REQUIREMENTS_FILE)
 
 dev:
-	uvicorn app.main:app --reload
+	uvicorn app.main:app --reload --port 4040
 
 start:
-	uvicorn app.main:app
+	python3 -m app.main
