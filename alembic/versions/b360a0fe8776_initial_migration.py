@@ -1,8 +1,8 @@
-"""Init
+"""Initial migration
 
-Revision ID: e20a4b4880c8
+Revision ID: b360a0fe8776
 Revises: 
-Create Date: 2024-09-23 05:44:16.466939
+Create Date: 2024-09-23 07:49:33.890937
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'e20a4b4880c8'
+revision: str = 'b360a0fe8776'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,7 +25,7 @@ def upgrade() -> None:
     sa.Column('puzzle_type', sa.String(), nullable=False),
     sa.Column('size_x', sa.Integer(), nullable=False),
     sa.Column('size_y', sa.Integer(), nullable=False),
-    sa.Column('difficulty', sa.String(), nullable=False),
+    sa.Column('difficulty', sa.Integer(), nullable=False),
     sa.Column('puzzle_data', sa.Text(), nullable=False),
     sa.Column('created_at', sa.TIMESTAMP(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
