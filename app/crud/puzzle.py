@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
-from app.models.puzzle import Puzzle
 from sqlalchemy.sql import func
+
+from app.models.puzzle import Puzzle
 
 def register_puzzle_by_data(db: Session, width: int, height: int, difficulty: int, puzzle_data: str) -> Puzzle:
   """
