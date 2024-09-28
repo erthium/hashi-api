@@ -5,7 +5,7 @@ from app.services import ProductionService
 from app.schemes import PuzzleGeometry, PuzzlePopulateRequest
 from app.core.settings import settings
 
-router = APIRouter()
+router = APIRouter(tags=["Engine"])
 
 puzzle_sizes: list = [(5, 5), (10, 10), (15, 15), (20, 20), (25, 25)]
 

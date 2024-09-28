@@ -5,7 +5,7 @@ from random import choice
 from app.services import HashiService
 from app.core.settings import settings
 
-router = APIRouter()
+router = APIRouter(tags=["Storage"])
 
 @router.get(
   "/random",
