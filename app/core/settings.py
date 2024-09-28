@@ -15,5 +15,8 @@ class Settings(BaseSettings):
   PORT: int = os.environ.get("PORT", 4040)
 
   ALLOWED_GEOMETRIES: list[tuple[int, int]] = [(10, 10), (15, 15), (25, 25)]
+  ALLOWED_DIFFICULTIES: list[str] = ["easy", "intermediate", "hard"]
+  ALLOWED_DIFFICULTIES_INT: list[int] = [1, 2, 3]
+  
 
 settings = Settings()

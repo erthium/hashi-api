@@ -20,11 +20,11 @@ class HashiService:
     return get_random_puzzle(self.db)
 
 
-  def get_puzzle_by_size(self, width: int, height: int) -> Puzzle:
+  def get_puzzle_by_size(self, width: int, height: int, difficulty) -> Puzzle:
     """
     Get a random puzzle by its size
     """
-    return get_puzzle_by_size(self.db, width, height)
+    return get_puzzle_by_size(self.db, width, height, difficulty)
 
 
   def get_puzzle_by_id(self, puzzle_id: int) -> Puzzle:
