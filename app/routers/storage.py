@@ -20,7 +20,23 @@ async def get_random(hashiService: HashiService = Depends(HashiService)):
     puzzle = hashiService.get_random_puzzle()
     if puzzle is None:
       raise HTTPException(status_code=404, detail="No puzzle found in the database")
-    return puzzle.puzzle_data
+    return puzzle.puzzle_data + f";;{puzzle.id}"
+  except Exception as e:
+    raise HTTPException(status_code=500)
+  
+@router.get(
+  "/{id}",
+  response_model=str,
+  summary="Get puzzle by ID",
+  description="Get a puzzle by its ID",
+  response_description="The puzzle data"
+)
+async def get_puzzle_by_id(id: int, hashiService: HashiService = Depends(HashiService)):
+  try:
+    puzzle = hashiService.get_puzzle_by_id(id)
+    if puzzle is None:
+      raise HTTPException(status_code=404, detail="No puzzle found with the given ID")
+    return puzzle.puzzle_data + f";;{puzzle.id}"
   except Exception as e:
     raise HTTPException(status_code=500)
 
@@ -42,7 +58,7 @@ async def get_puzzle_by_size(width: int, height: int, difficulty: str, hashiServ
     puzzle = hashiService.get_puzzle_by_size(width, height, difficulty_int)
     if puzzle is None:
       raise HTTPException(status_code=404, detail="No puzzle found with the given geometry")
-    return puzzle.puzzle_data
+    return puzzle.puzzle_data + f";;{puzzle.id}"
   except Exception as e:
     raise HTTPException(status_code=500)
 
@@ -59,6 +75,6 @@ async def get_puzzle(puzzle_id: int, hashiService: HashiService = Depends(HashiS
     puzzle = hashiService.get_puzzle_by_id(puzzle_id)
     if puzzle is None:
       raise HTTPException(status_code=404, detail="No puzzle found with the given ID")
-    return puzzle.puzzle_data
+    return puzzle.puzzle_data + f";;{puzzle.id}"
   except Exception as e:
     raise HTTPException(status_code=500)
