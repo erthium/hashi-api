@@ -5,9 +5,10 @@ Production service that generates puzzles using hashi package and stores them in
 from sqlalchemy.orm import Session
 from fastapi import Depends
 
+from hashi.core import Node
 from hashi.generator import generate_till_full
 from hashi.solver import solve
-from hashi.categorize.categorize import bucket, inspect_puzzle
+from hashi.categorize import bucket
 
 from app.crud.puzzle import register_puzzle_by_data, get_puzzle_count
 from app.core.database import get_database
@@ -24,19 +25,43 @@ class ProductionService:
     mapping = {'easy': 1, 'intermediate': 2, 'hard': 3}
     return mapping.get(difficulty_str, 1)
 
+  @staticmethod
+  def _strip_bridges(grid: list[list[Node]]) -> None:
+    """
+    Remove construction bridges and reset island current_in.
+    generate_till_full leaves bridges in place, but solve() expects an empty board.
+    """
+    for row in grid:
+      for node in row:
+        if node.n_type == 2:
+          node.make_empty()
+        elif node.n_type == 1:
+          node.current_in = 0
+
+  def _generate_solvable_puzzle(self, width: int, height: int) -> tuple[str, int]:
+    """
+    Generate a puzzle and solve it to determine difficulty.
+    Retries until a solvable puzzle is produced.
+    Returns (puzzle_data string, difficulty int 1-3).
+    """
+    while True:
+      grid = generate_till_full(width, height)
+      self._strip_bridges(grid)
+      solutions = solve(grid, stop_at_first=True)
+      if not solutions:
+        continue  # unsolvable, discard and retry
+      solution = solutions[0]
+      difficulty_str = bucket(grid, solution.rule_steps, solution.brutal_steps)
+      difficulty_int = self._difficulty_to_int(difficulty_str)
+      puzzle_data = grid_to_string(solution.grid)
+      return puzzle_data, difficulty_int
+
   def create_puzzle(self, width: int, height: int) -> str:
     """
-    Generate a new puzzle using hashi package and register it to database
+    Generate a new solvable puzzle using hashi package and register it to database
     Returns the puzzle data as a string
     """
-    grid = generate_till_full(width, height)
-    solve(grid)
-
-    info = inspect_puzzle(grid)
-    difficulty_str = bucket(grid, info.by_rule_steps, info.brutal_steps)
-    difficulty_int = self._difficulty_to_int(difficulty_str)
-
-    puzzle_data = grid_to_string(grid)
+    puzzle_data, difficulty_int = self._generate_solvable_puzzle(width, height)
     register_puzzle_by_data(self.db, width, height, difficulty_int, puzzle_data)
     return puzzle_data
 
@@ -51,17 +76,13 @@ class ProductionService:
       for _ in range(amount):
         self.create_puzzle(width, height)
     else:
-      for _ in range(amount):
-        grid = generate_till_full(width, height)
-        solve(grid)
-
-        info = inspect_puzzle(grid)
-        difficulty_str = bucket(grid, info.by_rule_steps, info.brutal_steps)
-        difficulty_int = self._difficulty_to_int(difficulty_str)
-
-        if difficulty_int == target_difficulty + 1:  # Convert 0,1,2 to 1,2,3
-          puzzle_data = grid_to_string(grid)
+      target_int = target_difficulty + 1  # Convert 0,1,2 to 1,2,3 (DB storage)
+      saved = 0
+      while saved < amount:
+        puzzle_data, difficulty_int = self._generate_solvable_puzzle(width, height)
+        if difficulty_int == target_int:
           register_puzzle_by_data(self.db, width, height, difficulty_int, puzzle_data)
+          saved += 1
 
 
   def populate_database_till(self, width: int, height: int, amount: int, target_difficulty: int | None = None) -> None:
