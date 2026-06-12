@@ -4,7 +4,6 @@ from random import choice
 
 from app.services import HashiService
 from app.core.settings import settings
-from app.utils import Convertions
 
 router = APIRouter(tags=["Storage"])
 
@@ -54,7 +53,7 @@ async def get_puzzle_by_size(width: int, height: int, difficulty: str, hashiServ
       raise HTTPException(status_code=400, detail=f"Invalid geometry. Allowed geometries: {settings.ALLOWED_GEOMETRIES}")
     if difficulty not in settings.ALLOWED_DIFFICULTIES:
       raise HTTPException(status_code=400, detail=f"Invalid difficulty. Allowed difficulties: {settings.ALLOWED_DIFFICULTIES}")
-    difficulty_int = Convertions.difficulty_to_int(difficulty)
+    difficulty_int = {'easy': 1, 'intermediate': 2, 'hard': 3}.get(difficulty, 1)
     puzzle = hashiService.get_puzzle_by_size(width, height, difficulty_int)
     if puzzle is None:
       raise HTTPException(status_code=404, detail="No puzzle found with the given geometry")
@@ -63,18 +62,3 @@ async def get_puzzle_by_size(width: int, height: int, difficulty: str, hashiServ
     raise HTTPException(status_code=500)
 
 
-@router.get(
-  "/{puzzle_id}",
-  response_model=str,
-  summary="Get puzzle by ID",
-  description="Get a puzzle by its ID",
-  response_description="The puzzle data"
-)
-async def get_puzzle(puzzle_id: int, hashiService: HashiService = Depends(HashiService)):
-  try:
-    puzzle = hashiService.get_puzzle_by_id(puzzle_id)
-    if puzzle is None:
-      raise HTTPException(status_code=404, detail="No puzzle found with the given ID")
-    return puzzle.puzzle_data + f";;{puzzle.id}"
-  except Exception as e:
-    raise HTTPException(status_code=500)

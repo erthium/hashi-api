@@ -1,70 +1,78 @@
 """
-Hashi service that directly interacts with the Hashi API router and the database interactions
+Production service that generates puzzles using hashi package and stores them in database
 """
 
 from sqlalchemy.orm import Session
 from fastapi import Depends
 
+from hashi.generator import generate_till_full
+from hashi.solver import solve
+from hashi.categorize.categorize import bucket, inspect_puzzle
+
 from app.crud.puzzle import register_puzzle_by_data, get_puzzle_count
 from app.core.database import get_database
-
-from app.libs.generator import generate_till_full
-from app.libs.cathegorise import get_difficulty
-from app.libs.utils import grid_to_string
+from app.services.utils import grid_to_string
 
 
 class ProductionService:
   def __init__(self, db: Session = Depends(get_database)):
     self.db: Session = db
 
+  @staticmethod
+  def _difficulty_to_int(difficulty_str: str) -> int:
+    """Map hashi difficulty string to int: easy=1, intermediate=2, hard=3"""
+    mapping = {'easy': 1, 'intermediate': 2, 'hard': 3}
+    return mapping.get(difficulty_str, 1)
 
   def create_puzzle(self, width: int, height: int) -> str:
     """
-    Create a new puzzle and register it to the database\n
-    Return the puzzle data as a string
+    Generate a new puzzle using hashi package and register it to database
+    Returns the puzzle data as a string
     """
-    puzzle = generate_till_full(width, height)
-    difficulty = get_difficulty(puzzle)
-    puzzle_data = grid_to_string(puzzle)
-    register_puzzle_by_data(self.db, width, height, difficulty, puzzle_data)
+    grid = generate_till_full(width, height)
+    solve(grid)
+
+    info = inspect_puzzle(grid)
+    difficulty_str = bucket(grid, info.by_rule_steps, info.brutal_steps)
+    difficulty_int = self._difficulty_to_int(difficulty_str)
+
+    puzzle_data = grid_to_string(grid)
+    register_puzzle_by_data(self.db, width, height, difficulty_int, puzzle_data)
     return puzzle_data
 
 
   def populate_database(self, width: int, height: int, amount: int, target_difficulty: int = 0) -> None:
     """
-    Populate the database with new puzzles\n
-    If target_difficulty is 0 as default, puzzles will be generated randomly\n
-    1 for easy, 2 for medium, 3 for hard\n
-    If target_difficulty is set, puzzles will be generated with the specific difficulty
+    Populate database with N solvable puzzles
+    If target_difficulty is 0, generate random difficulty puzzles
+    If target_difficulty is set (0=easy, 1=medium, 2=hard), generate only that difficulty
     """
     if target_difficulty == 0:
       for _ in range(amount):
-        #print(f"Creating puzzle {_+1}/{amount}")
-        puzzle_data = generate_till_full(width, height)
-        difficulty = get_difficulty(puzzle_data)
-        register_puzzle_by_data(self.db, width, height, difficulty, grid_to_string(puzzle_data))
+        self.create_puzzle(width, height)
     else:
       for _ in range(amount):
-        #print(f"Creating puzzle {_+1}/{amount}")
-        puzzle_data = generate_till_full(width, height)
-        difficulty = get_difficulty(puzzle_data)
-        while difficulty != target_difficulty:
-          puzzle_data = generate_till_full(width, height)
-          difficulty = get_difficulty(puzzle_data)
-        register_puzzle_by_data(self.db, width, height, difficulty, grid_to_string(puzzle_data))
+        grid = generate_till_full(width, height)
+        solve(grid)
+
+        info = inspect_puzzle(grid)
+        difficulty_str = bucket(grid, info.by_rule_steps, info.brutal_steps)
+        difficulty_int = self._difficulty_to_int(difficulty_str)
+
+        if difficulty_int == target_difficulty:
+          puzzle_data = grid_to_string(grid)
+          register_puzzle_by_data(self.db, width, height, difficulty_int, puzzle_data)
 
 
   def populate_database_till(self, width: int, height: int, amount: int, target_difficulty: int = 0) -> None:
+    """
+    Keep generating puzzles until database has N puzzles of target difficulty
+    """
     if target_difficulty == 0:
-      print("Populating all difficulties")
       for difficulty in [1, 2, 3]:
         self.populate_database_till(width, height, amount, difficulty)
     else:
-      print(f"Populating with target difficulty {target_difficulty}")
       count = get_puzzle_count(self.db, width, height, target_difficulty)
-      if count >= amount:
-        print(f"Database already has {count} puzzles with the target difficulty")
-        return
-      necessary_amount = amount - count
-      self.populate_database(width, height, necessary_amount, target_difficulty)
-      print(f"Database now has {amount} puzzles with the target difficulty")
+      if count < amount:
+        necessary = amount - count
+        self.populate_database(width, height, necessary, target_difficulty)
