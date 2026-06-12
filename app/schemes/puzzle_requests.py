@@ -8,4 +8,4 @@ class PuzzlePopulateRequest(BaseModel):
   width: int
   height: int
   amount: int
-  target_difficulty: int = 0
+  target_difficulty: int | None = None

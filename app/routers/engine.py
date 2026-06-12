@@ -62,12 +62,11 @@ async def populate(data: PuzzlePopulateRequest, productionService: ProductionSer
   width = data.width
   height = data.height
   amount = data.amount
-  target_difficulty = data.target_difficulty if data.target_difficulty else 0
   if not width or not height:
     raise HTTPException(status_code=400, detail="Width and height are required")
   if not amount:
     raise HTTPException(status_code=400, detail="Amount is required")
-  productionService.populate_database(width, height, amount, target_difficulty)
+  productionService.populate_database(width, height, amount, data.target_difficulty)
   return None
 
 
@@ -86,10 +85,9 @@ async def populate_till(data: PuzzlePopulateRequest, productionService: Producti
   width = data.width
   height = data.height
   amount = data.amount
-  target_difficulty = data.target_difficulty if data.target_difficulty else 0
   if not width or not height:
     raise HTTPException(status_code=400, detail="Width and height are required")
   if not amount:
     raise HTTPException(status_code=400, detail="Amount is required")
-  productionService.populate_database_till(width, height, amount, target_difficulty)
+  productionService.populate_database_till(width, height, amount, data.target_difficulty)
   return None
