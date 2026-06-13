@@ -51,7 +51,9 @@ async def generate_random(productionService: ProductionService = Depends(Product
   "/populate",
   response_model=None,
   summary="Populate the database",
-  description="Populates the database with a given amount of random puzzles with a given width and height.",
+  description="Populates the database with puzzles of a given width and height. "
+              "If target_difficulty is set (0=easy, 1=intermediate, 2=hard), generates `amount` of that difficulty. "
+              "If target_difficulty is omitted, generates `amount` of EACH difficulty.",
   response_description="None"
 )
 async def populate(data: PuzzlePopulateRequest, productionService: ProductionService = Depends(ProductionService)):

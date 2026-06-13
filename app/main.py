@@ -1,9 +1,18 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import engine
 from app.routers import storage
 from app.core.settings import settings
+
+# Ensure app logs are visible under uvicorn (which leaves the root logger
+# without an INFO handler).
+logging.basicConfig(
+  level=logging.INFO,
+  format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 
 app = FastAPI()
 
